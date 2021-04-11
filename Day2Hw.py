@@ -25,7 +25,7 @@ def gaussx(x, mu, sigma):
 
 def numintegrate(a,b):
     pointer = a
-    interval = 0.01
+    interval = 0.00001
     sum = 0
     while pointer <= b:
         gauss = gaussx(pointer,0.0,1.0)
@@ -45,18 +45,47 @@ def outer(arr, arrT):
             combined[i,j] = arrT[i,0] * arr[0,j]
     return combined
 
-img = cv.imread('lena512.pgm', cv.IMREAD_GRAYSCALE)
+def rescale(arr):
+    min = np.amin(arr)
+    max = np.amax(arr)
+    print('max: ', max)
+    scaling_value = 255/(max-min)
+    new_arr = (arr-min) * scaling_value
+    return new_arr
+
+def convolve(img, kernel):
+    img_x = img.shape[1]
+    img_y = img.shape[0]
+	
+    kernel_x = kernel.shape[1]
+    kernel_y = kernel.shape[0]
+
+    img_border = cv.copyMakeBorder(img, 1, 1, 1, 1, cv.BORDER_REPLICATE)
+    return_matrix = np.zeros((img_y, img_x), dtype="float32")
+    for y in np.arange(1, img_y + 1):
+        for x in np.arange(1, img_x + 1):
+            pointer_region = img_border[y - 1:y + 2, x - 1:x + 2]
+            product = pointer_region * kernel
+            return_matrix[y - 1, x - 1] = product.sum()
+    return_matrix = rescale(return_matrix)
+    return return_matrix
+
+img = cv.imread('/Users/MonicaChan/Desktop/AT/CV unit/Day2/lena512.png', cv.IMREAD_GRAYSCALE)
+plt.imshow(img)
+plt.show()
 
 arr = np.array([numintegrate(-1.5,-0.5), numintegrate(-0.5,0.5), numintegrate(0.5,1.5)])
 arr = np.reshape(arr, (1,3))
 arrT = arr.T
-print('arrT', arrT)
-print('arr', arr)
-kernel = outer(arr,arrT)
+kernel = np.outer(arr,arrT)
 normalized_kernel = normalize(kernel)
-print('kernel', normalized_kernel)
 
+new_img = convolve(img, normalized_kernel)
+plt.imshow(new_img)
+plt.show()
 
-
-
-
+#Testing against open cv's gaussian blur function
+cv_blur = cv.GaussianBlur(img, (3,3), 1)
+print(cv_blur-new_img)
+plt.imshow(cv_blur)
+plt.show()
