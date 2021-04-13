@@ -67,7 +67,11 @@ def convolve(img, kernel):
             pointer_region = img_border[y - 1:y + 2, x - 1:x + 2]
             product = pointer_region * kernel
             return_matrix[y - 1, x - 1] = product.sum()
+            print('matrix before rescale: ')
+            print(return_matrix)
     return_matrix = rescale(return_matrix)
+    print('matrix after rescale: ')
+    print(return_matrix)
     return return_matrix
 
 img = cv.imread('/Users/MonicaChan/Desktop/AT/CV unit/Day2/lena512.png', cv.IMREAD_GRAYSCALE)
@@ -81,11 +85,13 @@ kernel = np.outer(arr,arrT)
 normalized_kernel = normalize(kernel)
 
 new_img = convolve(img, normalized_kernel)
+print('new_img array: ', new_img)
 plt.imshow(new_img)
 plt.show()
 
 #Testing against open cv's gaussian blur function
-cv_blur = cv.GaussianBlur(img, (3,3), 1)
+cv_blur = cv.GaussianBlur(img, (3,3), 1, cv.BORDER_REPLICATE)
+print('Cv blur array: ', cv_blur)
 print(cv_blur-new_img)
 plt.imshow(cv_blur)
 plt.show()
